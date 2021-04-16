@@ -1,0 +1,1 @@
+set_paths(module_path())

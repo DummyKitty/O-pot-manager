@@ -8,15 +8,6 @@
 @Version     :1.0
 '''
 
-import sys
-import os
-
-try:
-    import opot_manager
-except ImportError:
-    sys.path.append(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-
 from manager.lib.core.interpreter import Interpreter
 
 

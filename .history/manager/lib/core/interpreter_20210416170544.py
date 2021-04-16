@@ -23,17 +23,14 @@ class BaseInterpreter(object):
 
     def start(self):
         while True:
-            try:
-                command = input(self.prompt)
-                command, _, args = command.strip().partition(" ")
-                command_handler = self.get_command_handler(command)
-                if command_handler == False:
-                    for i in cmd_exec(command, args):
-                        print(i)
-                else:
-                    command_handler(args)
-            except EOFError:
-                break
+            command = input(self.prompt)
+            command, _, args = command.strip().partition(" ")
+            command_handler = self.get_command_handler(command)
+            if command_handler == False:
+                for i in cmd_exec(command, args):
+                    print(i)
+            else:
+                command_handler(args)
 
     @property
     def prompt(self):

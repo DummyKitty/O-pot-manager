@@ -23,21 +23,18 @@ class BaseInterpreter(object):
 
     def start(self):
         while True:
-            try:
-                command = input(self.prompt)
-                command, _, args = command.strip().partition(" ")
-                command_handler = self.get_command_handler(command)
-                if command_handler == False:
-                    for i in cmd_exec(command, args):
-                        print(i)
-                else:
-                    command_handler(args)
-            except EOFError:
-                break
+            command = input(self.prompt)
+            command, _, args = command.strip().partition(" ")
+            command_handler = self.get_command_handler(command)
+            if command_handler == False:
+                for i in cmd_exec(command, args):
+                    print(i)
+            else:
+                command_handler(args)
 
     @property
     def prompt(self):
-        return "manager> "
+        return "manager>"
 
     def get_command_handler(self, command):
         try:
@@ -61,19 +58,14 @@ class Interpreter(BaseInterpreter):
         exit                        Exit manager"""
         print(help_message)
 
-    def command_search(self, *args, **kwargs):
+    def command_searchself, *args, **kwargs):
         pass
 
     def command_clear(self, *args, **kwargs):
-        try:
-            os.system('clear')
-        except:
-            os.system('cls')
+        os.system('clear')
 
-    def command_exit(self, *args, **kwargs):
-        print("Bye..")
-        raise EOFError
-
+    def command_exit(self,*args, **kwargs):
+        
     # def command_use(self):
 
 

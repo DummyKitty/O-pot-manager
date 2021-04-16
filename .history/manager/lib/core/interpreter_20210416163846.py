@@ -23,21 +23,18 @@ class BaseInterpreter(object):
 
     def start(self):
         while True:
-            try:
-                command = input(self.prompt)
-                command, _, args = command.strip().partition(" ")
-                command_handler = self.get_command_handler(command)
-                if command_handler == False:
-                    for i in cmd_exec(command, args):
-                        print(i)
-                else:
-                    command_handler(args)
-            except EOFError:
-                break
+            command = input(self.prompt)
+            command, _, args = command.strip().partition(" ")
+            command_handler = self.get_command_handler(command)
+            if command_handler == False:
+                for i in cmd_exec(command, args):
+                    print(i)
+            else:
+                command_handler(args)
 
     @property
     def prompt(self):
-        return "manager> "
+        return "manager>"
 
     def get_command_handler(self, command):
         try:
@@ -54,25 +51,19 @@ class Interpreter(BaseInterpreter):
 
     def command_help(self, *args, **kwargs):
         help_message = """Global commands:
-        help                        Print this help menu
-        search <search term>        Search for web service domain
-        list|show all               Show all latest CVE
-        clear                       clear the console screen
-        exit                        Exit manager"""
+    help                        Print this help menu
+    use <module>                Select a module for usage
+    search <search term>        Search for appropriate module
+    list|show all               Show all available pocs
+    clear                       clear the console screen
+    exit                        Exit Pocsuite3"""
         print(help_message)
 
-    def command_search(self, *args, **kwargs):
+    def command_list(self, *args, **kwargs):
         pass
 
-    def command_clear(self, *args, **kwargs):
-        try:
-            os.system('clear')
-        except:
-            os.system('cls')
-
-    def command_exit(self, *args, **kwargs):
-        print("Bye..")
-        raise EOFError
+    def command_show(self, *args, **kwargs):
+        pass
 
     # def command_use(self):
 
