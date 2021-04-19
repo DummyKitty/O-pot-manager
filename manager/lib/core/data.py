@@ -24,6 +24,6 @@ BANNER = """
                                                 """
 
 CONFIF_PATH = 'conf.rc'
-
+DATABASE_PATH = '/data/data.db'
 if __name__ == "__main__":
     print(BANNER)

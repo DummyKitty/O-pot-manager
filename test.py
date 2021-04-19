@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from manager.lib.core.log import logger
+from manager.thirdparty.prettytable import prettytable
 
 
 class knowledgeDataBase():
@@ -11,7 +12,7 @@ class knowledgeDataBase():
         cur = con.cursor()
         self.white_tables = ["services", "cves"]
         try:
-            cur.execute("create table {} (type, domain, ip, port)".format(
+            cur.execute("create table {} (service_type, domain, ip, port)".format(
                 self.table_name))
             logger.info("create table {}".format(self.table_name))
         except sqlite3.OperationalError as ex:
@@ -49,26 +50,30 @@ class knowledgeDataBase():
                             "delete from {} where domane= ? ".format(
                                 table_name), (domain))
                 else:
-                    cur.execute("delete * from ?", (table_name))
+                    cur.execute("delete from services")
             except sqlite3.OperationalError as ex:
                 logger.error("sqlite3 delete error")
                 print(ex)
         con.commit()
         con.close()
 
-    def select(self, table_name, service_name):
+    def select(self, table_name, service_type=None):
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         if table_name in self.white_tables:
             try:
-                if service_name:
+                if service_type or :
                     cur.execute(
                         "select * from {} where type like '%{}%' ".format(
-                            table_name, service_name))
+                            table_name, service_type))
                     result = cur.fetchall()
-                    con.commit()
-                    con.close()
-                    return result
+
+                else:
+                    cur.execute("select * from {} ".format(table_name))
+                    result = cur.fetchall()
+                con.commit()
+                con.close()
+                return result
             except sqlite3.OperationalError as ex:
                 logger.error("sqlite3 select error")
                 print(ex)
@@ -80,7 +85,12 @@ class knowledgeDataBase():
 
 
 if __name__ == "__main__":
-    db = knowledgeDataBase("manager/data/servicedb/services.db")
+    db = knowledgeDataBase("manager/data/data.db")
     db.insert("services", ["wordpress", "123kn.com", "182.55.223.1", "80"])
-    db.delete("services", "all")
-    print(db.select("services", "wordpress"))
+    # db.delete("services", allrange=True)
+    res = db.select("services")
+    print(res)
+    tb = prettytable.PrettyTable(["type", "domain", "ip", "port"])
+    for i in res:
+        tb.add_row(list(i))
+    print(tb)

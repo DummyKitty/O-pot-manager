@@ -21,6 +21,8 @@ from manager.modules.search_engines.shodan import Shodan
 from manager.modules.search_engines.fofa import Fofa
 from manager.modules.search_engines.censys import Censys
 from manager.lib.core.log import logger
+from manager.thirdparty.prettytable.prettytable import PrettyTable
+from manager.lib.core.db import knowledgeDataBase
 
 
 class BaseInterpreter(object):
@@ -54,18 +56,20 @@ class BaseInterpreter(object):
 
 
 class Interpreter(BaseInterpreter):
-    def __init__(self):
+    def __init__(self, module_path):
         super(Interpreter, self).__init__()
         self.config_path = CONFIF_PATH
         self.banner = BANNER
-
+        self.db_path = module_path + DATABASE_PATH
+        self.knowledgeDb = knowledgeDataBase(self.db_path)
         print(self.banner)
 
     def command_help(self, *args, **kwargs):
         help_message = """Global commands:
         help                        Print this help menu
-        search <search term>        Search for web service domain
-        list|show all               Show all latest CVE
+        shodan  <search term>        Search for web service domain
+        zoomeye|show all               Show all latest CVE
+        show    <services|cves>
         exit                        Exit manager"""
         print(help_message)
 
@@ -97,7 +101,34 @@ class Interpreter(BaseInterpreter):
                                uid=self.censys_uid,
                                secret=self.censys_uid)
 
-    # def command_show
+    def command_show(self, *args, **kwargs):
+        table_name = args[0]
+        if table_name == 'services':
+            service_type = args[1] if args[1] else None
+
+            port = kwargs['port']
+            res = self.knowledgeDb.select("services",
+                                          service_type=service_type,
+                                          ip=ip,
+                                          port=port)
+            tb = PrettyTable([])
+        elif table_name == 'cves':
+            pass
+        elif table_name == None:
+            print("show services | show cves")
+            self.command_help()
+        else:
+            print("不支持该命令")
+            self.command_help()
+
+    def _show_services(self, *args, **kwargs):
+        self.knowledgeDb.select("")
+
+    def _show_cves(self, *args, **kwargs):
+        pass
+
+    def _show_help(self):
+        self.command_show_help()
 
 
 def cmd_exec(command, args):

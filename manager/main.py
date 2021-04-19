@@ -38,7 +38,7 @@ def init_option():
 def main():
     check_env()
     init_option()
-    s = Interpreter()
+    s = Interpreter(module_path())
     s.start()
 
 
