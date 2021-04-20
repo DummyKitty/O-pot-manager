@@ -23,6 +23,7 @@ from manager.modules.search_engines.censys import Censys
 from manager.lib.core.log import logger
 from manager.thirdparty.prettytable.prettytable import PrettyTable
 from manager.lib.core.db import knowledgeDataBase
+from manager.modules.openresty import openresty
 
 
 class BaseInterpreter(object):
@@ -31,6 +32,9 @@ class BaseInterpreter(object):
         self.censys_secret = CENSYS_SECRET
         self.zoomeye_username = ZOOMEYE_USERNAME
         self.zoomeye_password = ZOOMEYE_PASSWORD
+        self.prompt_hostname = "manager"
+        self.current_module = None
+        self.__parse_prompt()
 
     def start(self):
         while True:
@@ -51,6 +55,16 @@ class BaseInterpreter(object):
 
     @property
     def prompt(self):
+        if self.current_module:
+            try:
+                return self.module_prompt_template.format(
+                    host=self.prompt_hostname, module=self.module_metadata)
+            except (AttributeError, KeyError):
+                return self.module_prompt_template.format(
+                    host=self.prompt_hostname, module="UnnamedModule")
+        else:
+            return self.raw_prompt_template.format(host=self.prompt_hostname)
+
         return "manager> "
 
     def get_command_handler(self, command):
@@ -60,13 +74,19 @@ class BaseInterpreter(object):
             return False
         return handler
 
+    def __parse_prompt(self):
+        raw_prompt_default_template = "\001\033[4m\002{host}\001\033[0m\002 > "
+        self.raw_prompt_template = raw_prompt_default_template
+        module_prompt_default_template = "\001\033[4m\002{host}\001\033[0m\002 (\001\033[91m\002{module}\001\033[0m\002) > "
+        self.module_prompt_template = module_prompt_default_template
+
 
 class Interpreter(BaseInterpreter):
-    def __init__(self, module_path):
+    def __init__(self, base_dir):
         super(Interpreter, self).__init__()
-        self.conf_path = module_path + CONFIF_PATH
+        self.conf_path = base_dir + CONFIF_PATH
         self.banner = BANNER
-        self.db_path = module_path + DATABASE_PATH
+        self.db_path = base_dir + DATABASE_PATH
         self.knowledgeDb = knowledgeDataBase(self.db_path)
 
         print(self.banner)
@@ -88,8 +108,8 @@ class Interpreter(BaseInterpreter):
         exit                            Exit manager"""
         print(help_message)
 
-    def command_search(self, *args, **kwargs):
-        pass
+    # def command_search(self, *args, **kwargs):
+    #     pass
 
     def command_exit(self, *args, **kwargs):
         print("Bye..")
@@ -181,7 +201,10 @@ class Interpreter(BaseInterpreter):
         else:
             pass
 
-    # def
+    def command_use(self, module_path, *args, **kwargs):
+        module_path = module_path[0]
+        if module_path == "openresty":
+            module_path = self.base_dir + "modules/openresty"
 
 
 def cmd_exec(command, args):
@@ -202,3 +225,11 @@ def cmd_exec(command, args):
         print(ex)
         return ["未找到该命令"]
     return stdout
+
+
+# def load_file_to_module(module_path):
+#     try:
+
+#     except ImportError:
+#         print("load module {} failed".format(module_path))
+# 动态导入不写了
