@@ -97,6 +97,6 @@ class Shodan():
 
 
 if __name__ == "__main__":
-    sd = Shodan(conf_path="conf.rc", token="BWabPGg5Sl3LYIncqVfAHyUVis4LXuHf")
+    sd = Shodan(conf_path="conf.rc", token="")
     search_result = sd.search('wordpress')
     print(search_result)

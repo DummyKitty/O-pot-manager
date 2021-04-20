@@ -12,7 +12,7 @@ class knowledgeDataBase():
         cur = con.cursor()
         self.white_tables = ["services", "cves"]
         try:
-            cur.execute("create table {} (service_type, domain, ip, port)".format(
+            cur.execute("create table {} (type, domain, ip, port)".format(
                 self.table_name))
             logger.info("create table {}".format(self.table_name))
         except sqlite3.OperationalError as ex:
@@ -57,15 +57,15 @@ class knowledgeDataBase():
         con.commit()
         con.close()
 
-    def select(self, table_name, service_type=None):
+    def select(self, table_name, service_name=None, ip=None, port=None):
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         if table_name in self.white_tables:
             try:
-                if service_type or :
+                if service_name:
                     cur.execute(
                         "select * from {} where type like '%{}%' ".format(
-                            table_name, service_type))
+                            table_name, service_name))
                     result = cur.fetchall()
 
                 else:

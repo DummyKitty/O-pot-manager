@@ -127,8 +127,6 @@ class ZoomEye():
 
 
 if __name__ == "__main__":
-    ze = ZoomEye('conf.rc',
-                 username="3214436480@qq.com",
-                 password="aa15074520721")
+    ze = ZoomEye('conf.rc', username="", password="")
     search_result = ze.search('wordpress')
     print(search_result)

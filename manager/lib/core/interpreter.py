@@ -104,7 +104,7 @@ class Interpreter(BaseInterpreter):
     def command_show(self, *args, **kwargs):
         table_name = args[0]
         if table_name == 'services':
-            service_type = args[1] if args[1] else None
+            # service_type = args[1] if args[1] else None
 
             port = kwargs['port']
             res = self.knowledgeDb.select("services",
