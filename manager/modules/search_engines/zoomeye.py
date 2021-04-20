@@ -4,6 +4,7 @@ import urllib
 from configparser import ConfigParser
 from manager.lib.core.log import logger
 import requests
+from collections import namedtuple
 
 
 class ZoomEye():
@@ -111,10 +112,16 @@ class ZoomEye():
                 if resp and resp.status_code == 200 and "matches" in resp.json(
                 ):
                     content = resp.json()
+                    ans_namedtuple = namedtuple(
+                        "ans", ["service_type", "domain", "ip", "port"])
                     if resource == 'web':
                         for match in content["matches"]:
-                            ans = match["site"]
-                            search_result.add(ans)
+                            domain = match["site"]
+                            service_type = dork
+                            ip = match['ip'][0]
+                            port = "None"  # 有domain的时候返回结果没有port
+                            search_result.add(
+                                ans_namedtuple(service_type, domain, ip, port))
                     else:
                         for match in content['matches']:
                             ans = match['ip']
@@ -122,11 +129,13 @@ class ZoomEye():
                                 ans += ':' + str(match['portinfo']['port'])
                             search_result.add(ans)
         except Exception as ex:
-            logger.error(str(ex))
+            print(ex)
         return search_result
 
 
 if __name__ == "__main__":
-    ze = ZoomEye('conf.rc', username="", password="")
+    ze = ZoomEye('conf.rc',
+                 username="3214436480@qq.com",
+                 password="aa15074520721")
     search_result = ze.search('wordpress')
     print(search_result)

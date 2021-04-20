@@ -84,6 +84,7 @@ class Censys():
                     content = resp.json()["results"]
                     for match in content:
                         ans = match["ip"]  # censys居然没有domain。。
+                        # if '80'
                         search_result.add(ans)
         except Exception as ex:
             logger.error(str(ex))
@@ -93,6 +94,6 @@ class Censys():
 if __name__ == '__main__':
     c = Censys("conf.rc",
                uid="b7baa610-b4c6-463e-af4b-dea66412ea0a",
-               secret="")
+               secret="hkOJASynWbs7obh26grY7h2xIWS4Ne9T")
     ret = c.search("wordpress")
     print(ret)

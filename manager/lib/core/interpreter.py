@@ -27,7 +27,10 @@ from manager.lib.core.db import knowledgeDataBase
 
 class BaseInterpreter(object):
     def __init__(self):
-        pass
+        self.censys_uid = CENSYS_UID
+        self.censys_secret = CENSYS_SECRET
+        self.zoomeye_username = ZOOMEYE_USERNAME
+        self.zoomeye_password = ZOOMEYE_PASSWORD
 
     def start(self):
         while True:
@@ -39,7 +42,7 @@ class BaseInterpreter(object):
                     for i in cmd_exec(command, args):
                         print(i)
                 else:
-                    command_handler(args)
+                    command_handler(args.split(" "))
             except EOFError:
                 break
 
@@ -58,19 +61,28 @@ class BaseInterpreter(object):
 class Interpreter(BaseInterpreter):
     def __init__(self, module_path):
         super(Interpreter, self).__init__()
-        self.config_path = CONFIF_PATH
+        self.conf_path = module_path + CONFIF_PATH
         self.banner = BANNER
         self.db_path = module_path + DATABASE_PATH
         self.knowledgeDb = knowledgeDataBase(self.db_path)
+
         print(self.banner)
 
     def command_help(self, *args, **kwargs):
         help_message = """Global commands:
-        help                        Print this help menu
-        shodan  <search term>        Search for web service domain
-        zoomeye|show all               Show all latest CVE
-        show    <services|cves>
-        exit                        Exit manager"""
+        help                            Print this help menu
+        shodan  <service type>          Search for web service domain via shodan
+        zoomeye <service type>          Search for web service domain via zoomeye (Recomand)
+        censys  <service type>          Search for web service domain via censys
+        fofa    <service type>          Search for web service domain via censys
+
+        show    <services|cves> <num>   
+                services                Show the services
+                cves                    Show all latest CVE
+        
+        delete  <services|cves>         Delete from knowledge database
+        banner                          Print banner
+        exit                            Exit manager"""
         print(help_message)
 
     def command_search(self, *args, **kwargs):
@@ -82,38 +94,45 @@ class Interpreter(BaseInterpreter):
 
     # def command_use(self):
 
-    def command_shodan(self, *args, **kwargs):
+    def command_shodan(self, args):
         search_result = Shodan(conf_path=self.conf_path,
                                token=self.shodan_token)
 
-    def command_zoomeye(self, *args, **kwargs):
-        search_result = ZoomEye(conf_path=self.conf_path,
-                                username=self.zoomeye_username,
-                                password=self.zoomeye_password)
+    def command_banner(self, *args, **kwargs):
+        print(self.banner)
 
-    def command_fofa(self, *args, **kwargs):
+    def command_zoomeye(self, args):
+        if len(args) > 0:
+            args = " ".join(args)
+            search_result = ZoomEye(
+                conf_path=self.conf_path,
+                username=self.zoomeye_username,
+                password=self.zoomeye_password).search(args)
+            self._insert_into_knowledgeDb("services", search_result)
+        else:
+            print("please search something")
+
+    def command_fofa(self, args):
         search_result = Fofa(conf_path=self.conf_path,
                              user=self.fofa_email,
                              token=self.fofa_token)
 
-    def command_censys(self, *args, **kwargs):
-        search_result = Censys(conf_path=self.conf_path,
-                               uid=self.censys_uid,
-                               secret=self.censys_uid)
+    def command_censys(self, args):  # censys不太好用，返回所有端口，选择不是很方便
+        if len(args) > 0:
+            args = " ".join(args)
+            search_result = Censys(conf_path=self.conf_path,
+                                   uid=self.censys_uid,
+                                   secret=self.censys_secret).search(args)
+            self._insert_into_knowledgeDb("services", search_result)
+        else:
+            print("please search something")
 
-    def command_show(self, *args, **kwargs):
-        table_name = args[0]
+    def command_show(self, args):
+        table_name = args.pop(0)
         if table_name == 'services':
-            # service_type = args[1] if args[1] else None
-
-            port = kwargs['port']
-            res = self.knowledgeDb.select("services",
-                                          service_type=service_type,
-                                          ip=ip,
-                                          port=port)
-            tb = PrettyTable([])
+            self._show_services(args)
         elif table_name == 'cves':
-            pass
+            self._show_cves(args)
         elif table_name == None:
             print("show services | show cves")
             self.command_help()
@@ -121,15 +140,45 @@ class Interpreter(BaseInterpreter):
             print("不支持该命令")
             self.command_help()
 
-    def _show_services(self, *args, **kwargs):
-        self.knowledgeDb.select("")
+    def command_delete(self, table_name):
+        table_name = " ".join(table_name)
+        if table_name in self.knowledgeDb.white_tables:
+            self.knowledgeDb.delete(table_name=table_name, allrange=True)
+
+    def _show_services(self, args):
+        service_type = args[0] if len(args) > 0 else None
+        limit = args[1] if len(args) > 1 else None
+        res = self.knowledgeDb.select("services",
+                                      service_name=service_type,
+                                      limit=limit)
+        tb = PrettyTable(["service_type", "domain", "ip", "port"])
+        for i in res:
+            tb.add_row(list(i))
+        print(tb)
 
     def _show_cves(self, *args, **kwargs):
-        pass
+        service_type = args[0] if len(args) > 0 else None
+        limit = args[1] if len(args) > 1 else None
+        res = self.knowledgeDb.select("services",
+                                      service_name=service_type,
+                                      limit=limit)
+        tb = PrettyTable(["service_type", "domain", "ip", "port"])
+        for i in res:
+            tb.add_row(list(i))
+        print(tb)
 
     def _show_help(self):
         self.command_show_help()
 
+    def _insert_into_knowledgeDb(self, table_name, knowledges):
+        if table_name in self.knowledgeDb.white_tables:
+            for i in knowledges:
+                self.knowledgeDb.insert(table_name, i)
+                # table_name, [i.service_type, i.domain, i.ip, i.port])
+        else:
+            pass
+
+    def 
 
 def cmd_exec(command, args):
     cmd = shlex.split(command + " " + args)

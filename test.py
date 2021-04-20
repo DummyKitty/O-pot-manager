@@ -1,96 +1,141 @@
-import sqlite3
-import os
+import getpass
+import urllib
+
+from configparser import ConfigParser
 from manager.lib.core.log import logger
-from manager.thirdparty.prettytable import prettytable
+import requests
+from collections import namedtuple
 
 
-class knowledgeDataBase():
-    def __init__(self, db_path):
-        self.db_path = db_path
-        self.table_name = os.path.basename(db_path).split(".")[0]
-        con = sqlite3.connect(self.db_path)
-        cur = con.cursor()
-        self.white_tables = ["services", "cves"]
+class ZoomEye():
+    def __init__(self, conf_path, username=None, password=None):
+        self.username = username
+        self.password = password
+        self.conf_path = conf_path
+        self.token = None
+
+        if self.conf_path:
+            self.parser = ConfigParser()
+            self.parser.read(self.conf_path)
+
+        if username and password:
+            self.check_account()
+        else:
+            try:
+                self.token = self.parser.get("Telnet404", 'Jwt token')
+            except Exception:
+                pass
+
+    def token_is_available(self):
+        if self.token:
+            headers = {'Authorization': 'JWT %s' % self.token}
+            try:
+                resp = requests.get('https://api.zoomeye.org/resources-info',
+                                    headers=headers)
+                if resp and resp.status_code == 200 and "plan" in resp.json():
+                    self.headers = headers
+                    return True
+            except Exception as ex:
+                logger.error(str(ex))
+        return False
+
+    def new_token(self):
+        data = '{{"username": "{}", "password": "{}"}}'.format(
+            self.username, self.password)
         try:
-            cur.execute("create table {} (type, domain, ip, port)".format(
-                self.table_name))
-            logger.info("create table {}".format(self.table_name))
-        except sqlite3.OperationalError as ex:
+            resp = requests.post(
+                'https://api.zoomeye.org/user/login',
+                data=data,
+            )
+            if resp.status_code != 401 and "access_token" in resp.json():
+                content = resp.json()
+                self.token = content['access_token']
+                self.headers = {'Authorization': 'JWT %s' % self.token}
+                return True
+        except Exception as ex:
+            logger.error(str(ex))
+        return False
+
+    def check_account(self):
+        if self.token_is_available():
+            return True
+        else:
+            if self.username and self.password:
+                if self.new_token():
+                    self.write_conf()
+                    return True
+            else:
+                username = input("Telnet404 email account:")
+                password = getpass.getpass("Telnet404 password:")
+                self.username = username
+                self.password = password
+                if self.new_token():
+                    self.write_conf()
+                    return True
+                else:
+                    logger.error(
+                        "The username or password is incorrect. "
+                        "Please enter the correct username and password.")
+                    return False
+        return False
+
+    def write_conf(self):
+        if not self.parser.has_section("Telnet404"):
+            self.parser.add_section("Telnet404")
+        try:
+            self.parser.set("Telnet404", "Jwt token", self.token)
+            self.parser.write(open(self.conf_path, "w"))
+        except Exception as ex:
+            logger.error(str(ex))
+
+    def get_resource_info(self):
+        if self.check_account():
+            try:
+                resp = requests.get('https://api.zoomeye.org/resources-info',
+                                    headers=self.headers)
+                if resp and resp.status_code == 200 and 'plan' in resp.json():
+                    content = resp.json()
+                    self.plan = content['plan']
+                    self.resources = content['resources']['search']
+                    return True
+            except Exception as ex:
+                logger.error(str(ex))
+        return False
+
+    def search(self, dork, pages=1, resource='web'):
+        search_result = set()
+        try:
+            for page in range(1, pages + 1):
+                url = "https://api.zoomeye.org/{}/search?query={}&page={}&facet=app,os".format(
+                    resource, urllib.parse.quote(dork), page)
+                resp = requests.get(url, headers=self.headers)
+                if resp and resp.status_code == 200 and "matches" in resp.json(
+                ):
+                    content = resp.json()
+                    ans_namedtuple = namedtuple(
+                        "ans", ["service_type", "domain", "ip", "port"])
+                    if resource == 'web':
+                        for match in content["matches"]:
+                            domain = match["site"]
+                            service_type = dork
+                            ip = match['ip'][0] 
+                            port = "None"  # 有domain的时候返回结果没有port
+                            search_result.add(
+                                ans_namedtuple(service_type, domain, ip, port))
+                    else:
+                        for match in content['matches']:
+                            ans = match['ip']
+                            if 'portinfo' in match:
+                                ans += ':' + str(match['portinfo']['port'])
+                            search_result.add(ans)
+        except Exception as ex:
             print(ex)
-            logger.info("table {} already exists".format(self.table_name))
-        con.commit()
-        con.close()
-
-    def insert(self, table_name, values):
-        con = sqlite3.connect(self.db_path)
-        cur = con.cursor()
-        if table_name in self.white_tables:
-            try:
-                cur.execute(
-                    "insert into {} values (?,?,?,?)".format(table_name),
-                    (values[0], values[1], values[2], values[3]))
-            except sqlite3.OperationalError as ex:
-                logger.error("sqlite3 insert error")
-                print(ex)
-        con.commit()
-        con.close()
-
-    def delete(self, table_name, domain=None, ip=None, allrange=None):
-        con = sqlite3.connect(self.db_path)
-        cur = con.cursor()
-        if table_name in self.white_tables:
-            try:
-                if not allrange:
-                    if ip:
-                        cur.execute(
-                            "delete from {} where ip= ? ".format(table_name),
-                            (ip))
-                    elif domain:
-                        cur.execute(
-                            "delete from {} where domane= ? ".format(
-                                table_name), (domain))
-                else:
-                    cur.execute("delete from services")
-            except sqlite3.OperationalError as ex:
-                logger.error("sqlite3 delete error")
-                print(ex)
-        con.commit()
-        con.close()
-
-    def select(self, table_name, service_name=None, ip=None, port=None):
-        con = sqlite3.connect(self.db_path)
-        cur = con.cursor()
-        if table_name in self.white_tables:
-            try:
-                if service_name:
-                    cur.execute(
-                        "select * from {} where type like '%{}%' ".format(
-                            table_name, service_name))
-                    result = cur.fetchall()
-
-                else:
-                    cur.execute("select * from {} ".format(table_name))
-                    result = cur.fetchall()
-                con.commit()
-                con.close()
-                return result
-            except sqlite3.OperationalError as ex:
-                logger.error("sqlite3 select error")
-                print(ex)
-        con.commit()
-        con.close()
-
-    def update(self, table_name, *values, **kwargs):
-        pass
+        return search_result
 
 
 if __name__ == "__main__":
-    db = knowledgeDataBase("manager/data/data.db")
-    db.insert("services", ["wordpress", "123kn.com", "182.55.223.1", "80"])
-    # db.delete("services", allrange=True)
-    res = db.select("services")
-    print(res)
-    tb = prettytable.PrettyTable(["type", "domain", "ip", "port"])
-    for i in res:
-        tb.add_row(list(i))
-    print(tb)
+    ze = ZoomEye('conf.rc',
+                 username="3214436480@qq.com",
+                 password="aa15074520721")
+    search_result = ze.search('wordpress')
+    print(search_result)

@@ -57,7 +57,12 @@ class knowledgeDataBase():
         con.commit()
         con.close()
 
-    def select(self, table_name, service_name=None, ip=None, port=None):
+    def select(self,
+               table_name,
+               service_name=None,
+               ip=None,
+               port=None,
+               limit=None):
         con = sqlite3.connect(self.db_path)
         cur = con.cursor()
         if table_name in self.white_tables:
