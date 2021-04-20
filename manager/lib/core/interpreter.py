@@ -45,6 +45,9 @@ class BaseInterpreter(object):
                     command_handler(args.split(" "))
             except EOFError:
                 break
+            except KeyboardInterrupt:
+                print("Bye...")
+                break
 
     @property
     def prompt(self):
@@ -178,7 +181,8 @@ class Interpreter(BaseInterpreter):
         else:
             pass
 
-    def 
+    # def
+
 
 def cmd_exec(command, args):
     cmd = shlex.split(command + " " + args)
