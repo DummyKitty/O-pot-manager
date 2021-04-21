@@ -23,7 +23,8 @@ from manager.modules.search_engines.censys import Censys
 from manager.lib.core.log import logger
 from manager.thirdparty.prettytable.prettytable import PrettyTable
 from manager.lib.core.db import knowledgeDataBase
-from manager.modules.openresty import openresty
+from manager.modules.openresty.Openresty import Openresty
+from manager.modules.opot.Opot import Opot
 
 
 class BaseInterpreter(object):
@@ -97,13 +98,16 @@ class Interpreter(BaseInterpreter):
         shodan  <service type>          Search for web service domain via shodan
         zoomeye <service type>          Search for web service domain via zoomeye (Recomand)
         censys  <service type>          Search for web service domain via censys
-        fofa    <service type>          Search for web service domain via censys
+        fofa    <service type>          Search for web service domain via fofa
 
         show    <services|cves> <num>   
                 services                Show the services
                 cves                    Show all latest CVE
-        
         delete  <services|cves>         Delete from knowledge database
+        
+        use     <modules>               Use modules
+                openresty               Use openresty module
+                opot                    Use opot module
         banner                          Print banner
         exit                            Exit manager"""
         print(help_message)
@@ -201,10 +205,35 @@ class Interpreter(BaseInterpreter):
         else:
             pass
 
-    def command_use(self, module_path, *args, **kwargs):
-        module_path = module_path[0]
+    def command_use(self, module, *args, **kwargs):
+        module_path = module[0]
         if module_path == "openresty":
-            module_path = self.base_dir + "modules/openresty"
+            # module_path = self.base_dir + "modules/openresty"
+            self.current_module = Openresty()
+        elif module_path == "opot":
+            self.current_module = Opot()
+
+    def command_services(self, func):
+        if self.current_module:
+            if func:
+                try:
+                    module_handler = self.get_module_func_handler(func)
+                    if module_handler:
+                        module_handler()
+                except:
+                    return
+        else:
+            print("please use a module eg:openresty|opot")
+
+    def command_back(self, *args, **kwargs):
+        self.current_module = None
+
+    def get_module_func_handler(self, func):
+        try:
+            handler = getattr(self.current_module, "service" + func)
+        except AttributeError:
+            return False
+        return handler
 
 
 def cmd_exec(command, args):

@@ -1,10 +1,7 @@
-
-
 import os
 
-class Opot():
-    def __init__(self):
 
+class Opot():
     def service_stop(self):
         cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml stop"
         try:
@@ -12,7 +9,7 @@ class Opot():
         except Exception as ex:
             print(ex)
 
-    def service_start(self,):
+    def service_start(self, ):
         cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml start"
         try:
             os.system(cmd)
@@ -31,5 +28,9 @@ class Opot():
             os.system("bash /opt/tpot/bin/dps.sh")
         except:
             return
+
     def service_install(self):
         os.system()
+
+    def __str__(self):
+        return "opot_module"
