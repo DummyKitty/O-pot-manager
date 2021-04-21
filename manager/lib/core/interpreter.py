@@ -59,7 +59,7 @@ class BaseInterpreter(object):
         if self.current_module:
             try:
                 return self.module_prompt_template.format(
-                    host=self.prompt_hostname, module=self.module_metadata)
+                    host=self.prompt_hostname, module=self.current_module)
             except (AttributeError, KeyError):
                 return self.module_prompt_template.format(
                     host=self.prompt_hostname, module="UnnamedModule")
@@ -83,37 +83,61 @@ class BaseInterpreter(object):
 
 
 class Interpreter(BaseInterpreter):
+    help_message = """Global commands:
+    help                            Print this help menu
+    shodan  <service type>          Search for web service domain via shodan
+    zoomeye <service type>          Search for web service domain via zoomeye (Recomand)
+    censys  <service type>          Search for web service domain via censys
+    fofa    <service type>          Search for web service domain via fofa
+
+    show    <services|cves> <num>   
+            services                Show the services
+            cves                    Show all latest CVE
+    delete  <services|cves>         Delete from knowledge database
+    
+    use     <modules>               Use modules
+            openresty               Use openresty module
+            opot                    Use opot module
+    banner                          Print banner
+    exit                            Exit manager"""
+
+    openresty_module_help_message = """openresty_module command
+    help                                Print this help menu
+    service <operation> 
+            reload                      Reload openresty
+            stop                        Stop openresty
+            start                       Start openresty
+            restart                     Restart openresty
+            update <proxy_services>     Update openresty reverse proxies
+    """
+    opot_module_help_message = """openresty_module command
+    help                                Print this help menu
+    service <operation> 
+            stop                        Stop opot
+            start                       Start opot
+            restart                     Restart opot
+            status                      Show the opot status
+            install                     Install the opot
+            unistall                    Unistall the opot
+    """
+
     def __init__(self, base_dir):
         super(Interpreter, self).__init__()
         self.conf_path = base_dir + CONFIF_PATH
         self.banner = BANNER
-        self.db_path = base_dir + DATABASE_PATH
-        self.knowledgeDb = knowledgeDataBase(self.db_path)
-
+        self.knowledgeDb = knowledgeDataBase()
         print(self.banner)
 
     def command_help(self, *args, **kwargs):
-        help_message = """Global commands:
-        help                            Print this help menu
-        shodan  <service type>          Search for web service domain via shodan
-        zoomeye <service type>          Search for web service domain via zoomeye (Recomand)
-        censys  <service type>          Search for web service domain via censys
-        fofa    <service type>          Search for web service domain via fofa
+        if self.current_module:
+            self.get_module_help()
+        else:
+            print(self.help_message)
 
-        show    <services|cves> <num>   
-                services                Show the services
-                cves                    Show all latest CVE
-        delete  <services|cves>         Delete from knowledge database
-        
-        use     <modules>               Use modules
-                openresty               Use openresty module
-                opot                    Use opot module
-        banner                          Print banner
-        exit                            Exit manager"""
-        print(help_message)
-
-    # def command_search(self, *args, **kwargs):
-    #     pass
+    def get_module_help(self):
+        print(self.help_message)
+        if self.current_module:
+            print(getattr(self, self.current_module + "_help_message"))
 
     def command_exit(self, *args, **kwargs):
         print("Bye..")
@@ -178,7 +202,7 @@ class Interpreter(BaseInterpreter):
         res = self.knowledgeDb.select("services",
                                       service_name=service_type,
                                       limit=limit)
-        tb = PrettyTable(["service_type", "domain", "ip", "port"])
+        tb = PrettyTable(["id", "service_type", "domain", "ip", "port"])
         for i in res:
             tb.add_row(list(i))
         print(tb)
@@ -195,7 +219,7 @@ class Interpreter(BaseInterpreter):
         print(tb)
 
     def _show_help(self):
-        self.command_show_help()
+        self.command_help()
 
     def _insert_into_knowledgeDb(self, table_name, knowledges):
         if table_name in self.knowledgeDb.white_tables:
@@ -208,19 +232,23 @@ class Interpreter(BaseInterpreter):
     def command_use(self, module, *args, **kwargs):
         module_path = module[0]
         if module_path == "openresty":
-            # module_path = self.base_dir + "modules/openresty"
             self.current_module = Openresty()
         elif module_path == "opot":
             self.current_module = Opot()
 
-    def command_services(self, func):
+    def command_service(self, params):
+        func = params.pop(0)
+        args = " ".join(params)
         if self.current_module:
             if func:
                 try:
                     module_handler = self.get_module_func_handler(func)
                     if module_handler:
-                        module_handler()
-                except:
+                        module_handler(args)
+                    else:
+                        self.get_module_help()
+                except Exception as ex:
+                    print(ex)
                     return
         else:
             print("please use a module eg:openresty|opot")
@@ -230,7 +258,7 @@ class Interpreter(BaseInterpreter):
 
     def get_module_func_handler(self, func):
         try:
-            handler = getattr(self.current_module, "service" + func)
+            handler = getattr(self.current_module, "service_" + func)
         except AttributeError:
             return False
         return handler
