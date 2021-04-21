@@ -6,17 +6,17 @@ from manager.lib.core.data import *
 
 class Openresty():
     server_template = """
-    server {
+    server {{
         listen    {listen_port};
         proxy_set_header Host "{domain}";
-        location / {
+        location / {{
             access_log logs/access_8080.log main;
             proxy_pass http://{domain}/;
             proxy_redirect     off;
             proxy_set_header   X-Real-IP        $remote_addr;
             proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-        }
-    }
+        }}
+    }}
 
     """
 
@@ -24,7 +24,7 @@ class Openresty():
       - "{port}:{port}"
     """
 
-    common_port = ["80", "81", "8080", "8081", "8089", "9000", ""]
+    common_port = ["80", "81", "8080", "8081", "8089", "9000", "10000"]
 
     weblogic_port = ["7001", "7002"]
 
@@ -75,11 +75,19 @@ class Openresty():
         Args:
             services (["service_type","domain","ip","port"]): [content from the knowleageDb]
         """
-        if len(prepare_services) > 0:
-            reverss_proxies_conf = open(CURRENT_REVERSE_PROXIES_PATH, "w")
+        if len(self.prepare_services) > 0:
+            reverse_proxies_conf = open(CURRENT_REVERSE_PROXIES_PATH, "w")
             for reverse_proxy in self.prepare_services:
-                reverss_proxies_conf.write(" ".join(x for x in reverse_proxy) +
-                                           "\n")
+                reverse_proxies_conf.write(
+                    " ".join([str(x) for x in reverse_proxy]) + "\n")
+            reverse_proxies_conf.close()
+            servers = self.gen_servers()
+
+            nginx_conf_template = open(TEMPLATE_DIR + "nginx.conf").read()
+            nginx_conf_content = nginx_conf_template.format(servers=servers)
+            with open(BASE_DIR + "test_nginx.conf", "w") as f:
+                f.write(nginx_conf_content)
+            f.close()
 
         else:
             print("please add services")
@@ -92,12 +100,13 @@ class Openresty():
             service_type ([type]): [description]
             number ([type]): [description]
         """
-        ids = args[0].strip().split(" ")
+        ids = args[0].strip().split()
 
         if len(ids):
             for i in ids:
-                self.prepare_services.append(
-                    self.knowledgeDb.select("services", id=i))
+                res = self.knowledgeDb.select("services", id=i)
+                if res:
+                    self.prepare_services.append(res)
         elif number:
             self.prepare_services.extend(
                 self.knowledgeDb.select("services",
@@ -116,10 +125,25 @@ class Openresty():
             tb.add_row(i)
         print(tb)
 
+    def service_clear(self, *args, **kwargs):
+        self.prepare_services = []
+        self.service_list()
+
     def service_current(self):
         print("Current selections:")
         tb = PrettyTable(["id", "service_type", "domain", "ip", "port"])
         print(tb)
+
+    def gen_servers(self):
+        servers = ""
+        for i in range(len(self.prepare_services)):
+            if i < len(self.common_port):
+                domain = self.prepare_services[i][2]
+                port = self.common_port[i]
+                servers += self.server_template.format(listen_port=port,
+                                                       domain=domain)
+
+        return servers
 
     def __str__(self):
         return "openresty_module"

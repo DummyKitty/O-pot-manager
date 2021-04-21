@@ -24,7 +24,7 @@ from manager.lib.core.log import logger
 from manager.thirdparty.prettytable.prettytable import PrettyTable
 from manager.lib.core.db import knowledgeDataBase
 from manager.modules.openresty.Openresty import Openresty
-from manager.modules.opot.Opot import Opot
+from manager.modules.opot.opot import Opot
 
 
 class BaseInterpreter(object):
@@ -254,6 +254,10 @@ class Interpreter(BaseInterpreter):
             print("please use a module eg:openresty|opot")
 
     def command_back(self, *args, **kwargs):
+        try:
+            self.current_module.prepare_services = []
+        except:
+            pass
         self.current_module = None
 
     def get_module_func_handler(self, func):
