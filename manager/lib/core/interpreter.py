@@ -157,7 +157,6 @@ class Interpreter(BaseInterpreter):
     def command_banner(self, *args, **kwargs):
         print(self.banner)
 
-    # def command_use(self):
 
     def command_shodan(self, args):
         search_result = Shodan(conf_path=self.conf_path,
@@ -253,6 +252,8 @@ class Interpreter(BaseInterpreter):
             self.current_module = Openresty()
         elif module_path == "opot":
             self.current_module = Opot()
+        else:
+            print("module not found. Use: help")
 
     def command_service(self, params):
         func = params.pop(0)

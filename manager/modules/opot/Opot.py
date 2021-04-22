@@ -51,8 +51,8 @@ class Opot():
             return
 
     def service_install(self, *args, **kwargs):
-        os.system("git clone https://github.com/GreyDr34d/O-Pot.git /root/")
-        os.system("bash O-Pot/iso/installer/install.sh")
+        os.system("git clone https://github.com/GreyDr34d/O-Pot.git /root/O-Pot")
+        os.system("bash O-Pot/iso/installer/install.sh --type=user")
 
     def service_unistall(self, *args, **kwargs):
         sure = input(f"{red}Are you sure to uninstall O-pot?[y|n]{end}")

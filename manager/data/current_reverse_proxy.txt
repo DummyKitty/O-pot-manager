@@ -1,3 +1,7 @@
-1 phpmyadmin webdoksandokuz.com 37.247.111.103 None
-14 phpmyadmin mail.utzingers.ch 78.46.49.112 None
-15 phpmyadmin 533724356947.aiipc.com 14.17.65.118 None
+1 phpmyadmin webdoksandokuz.com 37.247.111.103 80
+23 weblogic stevenc.ca 198.98.112.225 81
+40 weblogic einfo.port.co.th 61.19.205.144 8080
+14 phpmyadmin mail.utzingers.ch 78.46.49.112 8081
+44 solr 3dlacrosse.com 52.51.18.160 8089
+5 phpmyadmin dmt-potsdam.de 217.114.222.211 9000
+37 weblogic bigip-idmrestinternal-rdr.em2.oraclecloud.com 160.34.16.45 10000

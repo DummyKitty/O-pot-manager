@@ -86,11 +86,6 @@ class Openresty():
             services (["service_type","domain","ip","port"]): [content from the knowleageDb]
         """
         if len(self.prepare_services) > 0:
-            reverse_proxies_conf = open(CURRENT_REVERSE_PROXIES_PATH, "w")
-            for reverse_proxy in self.prepare_services:
-                reverse_proxies_conf.write(
-                    " ".join([str(x) for x in reverse_proxy]) + "\n")
-            reverse_proxies_conf.close()
             servers = self.gen_servers()
 
             nginx_conf_template = open(TEMPLATE_DIR + "nginx.conf.tpl").read()
@@ -144,19 +139,26 @@ class Openresty():
     def service_current(self, *args, **kwargs):
         print("Current selections:")
         tb = PrettyTable(["id", "service_type", "domain", "ip", "port"])
-        with open(DATA_DIR + "current_reverse_proxy.txt") as f:
+        with open(CURRENT_REVERSE_PROXIES_PATH) as f:
             for i in f:
                 tb.add_row(i.split())
         print(tb)
 
     def gen_servers(self):
         servers = ""
+        reverse_proxies_conf = open(CURRENT_REVERSE_PROXIES_PATH, "w")
         for i in range(len(self.prepare_services)):
             if i < len(self.common_port):
+                service_id = str(self.prepare_services[i][0])
                 domain = self.prepare_services[i][2]
+                ip = self.prepare_services[i][3]
+                service_type = self.prepare_services[i][1]
                 port = self.common_port[i]
                 servers += self.server_template.format(listen_port=port,
                                                        domain=domain)
+                
+                reverse_proxies_conf.write(" ".join([service_id,service_type,domain,ip,port]) + "\n")
+        reverse_proxies_conf.close()
 
         return servers
 
