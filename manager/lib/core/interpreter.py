@@ -84,44 +84,44 @@ class BaseInterpreter(object):
 
 
 class Interpreter(BaseInterpreter):
-    help_message = """Global commands:
-    help                            Print this help menu
-    shodan  <service type>          Search for web service domain via shodan
-    zoomeye <service type>          Search for web service domain via zoomeye (Recomand)
-    censys  <service type>          Search for web service domain via censys
-    fofa    <service type>          Search for web service domain via fofa
+    help_message = f"""Global commands:{red}
+    help{end}                             Print this help menu{red}
+    shodan{end}   <service type>          Search for web service domain via shodan{red}
+    zoomeye{end}  <service type>          Search for web service domain via zoomeye (Recomand){red}
+    censys{end}   <service type>          Search for web service domain via censys{red}
+    fofa{end}     <service type>          Search for web service domain via fofa{red}
 
-    show    <services|cves> <num>   
-            services                Show the services
-            cves                    Show all latest CVE
-    delete  <services|cves>         Delete from knowledge database
+    show{end}     <services|cves> <num>   
+             services                Show the services
+             cves                    Show all latest CVE{red}
+    delete{end}   <services|cves>         Delete from knowledge database{red}
     
-    use     <modules>               Use modules
-            openresty               Use openresty module
-            opot                    Use opot module
-    banner                          Print banner
-    exit                            Exit manager
+    use{end}      <modules>               Use modules
+             openresty               Use openresty module
+             opot                    Use opot module{red}
+    banner{end}                           Print banner{red}
+    exit{end}                             Exit manager{end}
     """
 
-    openresty_module_help_message = """openresty_module command
-    help                                Print this help menu.
-    service <operation> 
-            reload                      Reload openresty.
-            stop                        Stop openresty.
-            start                       Start openresty.
-            restart                     Restart openresty.
-            add    <service id>         Add services into prepared services table with id.
-                                        (using: "show services" to view the id)
-                                        (eg: service add 1 2 5 23)
-            list                        List prepared services to be deployed.
-            clear                       Clear prepared services table.
-            current                     List running services.
-            update <proxy_services>     Update openresty reverse proxies using prepared
-                                        services.
+    openresty_module_help_message = f"""openresty_module command{red}
+    help{end}                                 Print this help menu.{red}
+    service{end}  <operation> 
+             reload                      Reload openresty.
+             stop                        Stop openresty.
+             start                       Start openresty.
+             restart                     Restart openresty.
+             add    <service id>         Add services into prepared services table with id.
+                                         (using: "show services" to view the id)
+                                         (eg: service add 1 2 5 23)
+             list                        List prepared services to be deployed.
+             clear                       Clear prepared services table.
+             current                     List running services.
+             update <proxy_services>     Update openresty reverse proxies using prepared
+                                         services.{end}
     """
-    opot_module_help_message = """opot_module command
-    help                                Print this help menu.
-    service <operation> 
+    opot_module_help_message = f"""opot_module command{red}
+    help{end}                                Print this help menu.{red}
+    service{end} <operation> 
             stop                        Stop opot.
             start                       Start opot.
             restart                     Restart opot.

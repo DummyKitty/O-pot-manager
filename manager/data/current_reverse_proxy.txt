@@ -1,3 +1,3 @@
 1 phpmyadmin webdoksandokuz.com 37.247.111.103 None
-2 phpmyadmin binfoservice.fr 172.67.174.44 None
-3 phpmyadmin www.lovequotesweb.com 172.67.198.172 None
+14 phpmyadmin mail.utzingers.ch 78.46.49.112 None
+15 phpmyadmin 533724356947.aiipc.com 14.17.65.118 None

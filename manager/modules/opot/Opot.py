@@ -9,29 +9,40 @@
 '''
 
 import os
-
+from manager.lib.core.data import *
 
 class Opot():
     def service_stop(self, *args, **kwargs):
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml stop"
-        try:
-            os.system(cmd)
-        except Exception as ex:
-            print(ex)
+        sure = input(f"{red}Are you sure to stop O-pot?[y|n]{end}")
+        if sure == "y" or sure == "Y":
+            cmd = "docker-compose -f /opt/tpot/etc/tpot.yml stop"
+            try:
+                os.system(cmd)
+            except Exception as ex:
+                print(ex)
+        else:
+            return
+
+            
 
     def service_start(self, *args, **kwargs):
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml start"
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml start"
         try:
             os.system(cmd)
         except Exception as ex:
             print(ex)
+        print(f"{yellow}Please waite for a moment~ {red}Using service status to check{end}")
 
     def service_restart(self, *args, **kwargs):
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml restart"
-        try:
-            os.system(cmd)
-        except Exception as ex:
-            print(ex)
+        sure = input(f"{red}Are you sure to stop O-pot?[y|n]{end}")
+        if sure == "y" or sure == "Y":
+            cmd = "docker-compose -f /opt/tpot/etc/tpot.yml restart"
+            try:
+                os.system(cmd)
+            except Exception as ex:
+                print(ex)
+        else:
+            return
 
     def service_status(self, *args, **kwargs):
         try:
@@ -40,27 +51,31 @@ class Opot():
             return
 
     def service_install(self, *args, **kwargs):
-        os.system("git clone https://github.com/GreyDr34d/O-Pot.git")
+        os.system("git clone https://github.com/GreyDr34d/O-Pot.git /root/")
         os.system("bash O-Pot/iso/installer/install.sh")
 
     def service_unistall(self, *args, **kwargs):
-        sure = input("Are you sure to uninstall O-pot?[y|n]")
+        sure = input(f"{red}Are you sure to uninstall O-pot?[y|n]{end}")
         if sure == "y" or sure == "Y":
             self._delete()
 
     def service_up(self, *args, **kwargs):
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml up -d"
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml up -d"
         try:
             os.system(cmd)
         except Exception as ex:
             print(ex)
 
     def service_down(self, *args, **kwargs):
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml down"
-        try:
-            os.system(cmd)
-        except Exception as ex:
-            print(ex)
+        sure = input(f"{red}Are you sure to remove O-pot containers?[y|n]{end}")
+        if sure == "y" or sure == "Y":
+            cmd = "docker-compose -f /opt/tpot/etc/tpot.yml down"
+            try:
+                os.system(cmd)
+            except Exception as ex:
+                print(ex)
+        else:
+            return
 
     def _delete(self):
         self.service_down()

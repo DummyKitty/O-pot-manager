@@ -20,7 +20,8 @@ O-pot manager is a convenient management tool{yellow}
  / / / / / / /_/ / / / / /_/ / /_/ /  __/ /    {white}
 /_/ /_/ /_/\__,_/_/ /_/\__,_/\__, /\___/_/     
                             /____/             
-{red} having fun~{end} 
+{white}Author:dr34d      Date:2021.04.22
+{red}having fun~{end} 
 """
 CONFIF_PATH = 'conf.rc'
 BASE_DIR = os.path.abspath(
