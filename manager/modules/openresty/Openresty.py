@@ -46,7 +46,7 @@ class Openresty():
     def service_reload(self, *args, **kwargs):
         """[reload openresty via docker-compose command]
         """
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml exec openresty openresy -s reload "
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml exec openresty /usr/local/openresty/bin/openresty -s reload"
         try:
             os.system(cmd)
         except Exception as ex:
@@ -55,7 +55,7 @@ class Openresty():
     def service_stop(self, *args, **kwargs):
         """[stop openresty via docker-compose command]
         """
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml stop openresy"
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml stop openresty"
         try:
             os.system(cmd)
         except Exception as ex:
@@ -64,7 +64,7 @@ class Openresty():
     def service_start(self, *args, **kwargs):
         """[start openresty via docker-compose command]
         """
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml start openresty"
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml start openresty"
         try:
             os.system(cmd)
         except Exception as ex:
@@ -73,7 +73,7 @@ class Openresty():
     def service_restart(self, *args, **kwargs):
         """[restart openresty via docker-compose command]
         """
-        cmd = "docker-compose -f /opt/tpot/etc/tpot.yaml restart openresty"
+        cmd = "docker-compose -f /opt/tpot/etc/tpot.yml restart openresty"
         try:
             os.system(cmd)
         except Exception as ex:
@@ -141,9 +141,10 @@ class Openresty():
         self.prepare_services = []
         self.service_list()
 
-    def service_current(self):
+    def service_current(self,*args, **kwargs):
         print("Current selections:")
         tb = PrettyTable(["id", "service_type", "domain", "ip", "port"])
+        with open(BASE_DIR)
         print(tb)
 
     def gen_servers(self):
