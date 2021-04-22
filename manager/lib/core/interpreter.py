@@ -84,7 +84,7 @@ class BaseInterpreter(object):
 
 
 class Interpreter(BaseInterpreter):
-    help_message = f"""Global commands:{red}
+    help_message = f"""{yellow}Global commands:{red}
     help{end}                             Print this help menu{red}
     shodan{end}   <service type>          Search for web service domain via shodan{red}
     zoomeye{end}  <service type>          Search for web service domain via zoomeye (Recomand){red}
@@ -103,7 +103,7 @@ class Interpreter(BaseInterpreter):
     exit{end}                             Exit manager{end}
     """
 
-    openresty_module_help_message = f"""openresty_module command{red}
+    openresty_module_help_message = f"""{yellow}openresty_module command{red}
     help{end}                                 Print this help menu.{red}
     service{end}  <operation> 
              reload                      Reload openresty.
@@ -119,7 +119,7 @@ class Interpreter(BaseInterpreter):
              update <proxy_services>     Update openresty reverse proxies using prepared
                                          services.{end}
     """
-    opot_module_help_message = f"""opot_module command{red}
+    opot_module_help_message = f"""{yellow}opot_module command{red}
     help{end}                                Print this help menu.{red}
     service{end} <operation> 
             stop                        Stop opot.
