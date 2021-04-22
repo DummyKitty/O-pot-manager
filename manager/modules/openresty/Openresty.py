@@ -141,10 +141,12 @@ class Openresty():
         self.prepare_services = []
         self.service_list()
 
-    def service_current(self,*args, **kwargs):
+    def service_current(self, *args, **kwargs):
         print("Current selections:")
         tb = PrettyTable(["id", "service_type", "domain", "ip", "port"])
-        with open(BASE_DIR)
+        with open(DATA_DIR + "current_reverse_proxy.txt") as f:
+            for i in f:
+                tb.add_row(i.split())
         print(tb)
 
     def gen_servers(self):
