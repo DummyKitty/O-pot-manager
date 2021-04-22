@@ -37,7 +37,8 @@ class knowledgeDataBase():
                 logger.info("create table current_services")
                 self.is_init = 1
             except sqlite3.OperationalError as ex:
-                print(ex)
+                # print(ex)
+                pass
                 # logger.info("table {} already exists".format(self.table_name))
             con.commit()
             con.close()

@@ -97,7 +97,7 @@ class Openresty():
             nginx_conf_content = nginx_conf_template.format(servers=servers)
             os.system(
                 "cp /data/openresty/nginx.conf /data/openresty/nginx.conf_bak")
-            with open(BASE_DIR + "/data/openresty/nginx.conf", "w") as f:
+            with open("/data/openresty/nginx.conf", "w") as f:
                 f.write(nginx_conf_content)
             f.close()
             self.service_reload()
