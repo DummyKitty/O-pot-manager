@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File        :Openresty.py
+@Description :
+@Date        :2021/04/22 08:43:46
+@Author      :dr34d
+@Version     :1.0
+'''
+
 import os
 from manager.lib.core.db import knowledgeDataBase
 from manager.thirdparty.prettytable.prettytable import PrettyTable
@@ -83,12 +93,14 @@ class Openresty():
             reverse_proxies_conf.close()
             servers = self.gen_servers()
 
-            nginx_conf_template = open(TEMPLATE_DIR + "nginx.conf").read()
+            nginx_conf_template = open(TEMPLATE_DIR + "nginx.conf.tpl").read()
             nginx_conf_content = nginx_conf_template.format(servers=servers)
-            with open(BASE_DIR + "test_nginx.conf", "w") as f:
+            os.system(
+                "cp /data/openresty/nginx.conf /data/openresty/nginx.conf_bak")
+            with open(BASE_DIR + "/data/openresty/nginx.conf", "w") as f:
                 f.write(nginx_conf_content)
             f.close()
-
+            self.service_reload()
         else:
             print("please add services")
             self.service_list()

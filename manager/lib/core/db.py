@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File        :db.py
+@Description :
+@Date        :2021/04/21 08:40:01
+@Author      :dr34d
+@Version     :1.0
+'''
+
 import sqlite3
 import os
 from manager.lib.core.log import logger

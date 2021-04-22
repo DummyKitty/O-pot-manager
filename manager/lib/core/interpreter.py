@@ -24,7 +24,7 @@ from manager.lib.core.log import logger
 from manager.thirdparty.prettytable.prettytable import PrettyTable
 from manager.lib.core.db import knowledgeDataBase
 from manager.modules.openresty.Openresty import Openresty
-from manager.modules.opot.opot import Opot
+from manager.modules.opot.Opot import Opot
 
 
 class BaseInterpreter(object):
@@ -44,8 +44,9 @@ class BaseInterpreter(object):
                 command, _, args = command.strip().partition(" ")
                 command_handler = self.get_command_handler(command)
                 if command_handler == False:
-                    for i in cmd_exec(command, args):
-                        print(i)
+                    if command:
+                        for i in cmd_exec(command, args):
+                            print(i)
                 else:
                     command_handler(args.split(" "))
             except EOFError:
@@ -99,26 +100,36 @@ class Interpreter(BaseInterpreter):
             openresty               Use openresty module
             opot                    Use opot module
     banner                          Print banner
-    exit                            Exit manager"""
+    exit                            Exit manager
+    """
 
     openresty_module_help_message = """openresty_module command
-    help                                Print this help menu
+    help                                Print this help menu.
     service <operation> 
-            reload                      Reload openresty
-            stop                        Stop openresty
-            start                       Start openresty
-            restart                     Restart openresty
-            update <proxy_services>     Update openresty reverse proxies
+            reload                      Reload openresty.
+            stop                        Stop openresty.
+            start                       Start openresty.
+            restart                     Restart openresty.
+            add    <service id>         Add services into prepared services table with id.
+                                        (using: "show services" to view the id)
+                                        (eg: service add 1 2 5 23)
+            list                        List prepared services to be deployed.
+            clear                       Clear prepared services table.
+            current                     List running services.
+            update <proxy_services>     Update openresty reverse proxies using prepared
+                                        services.
     """
-    opot_module_help_message = """openresty_module command
-    help                                Print this help menu
+    opot_module_help_message = """opot_module command
+    help                                Print this help menu.
     service <operation> 
-            stop                        Stop opot
-            start                       Start opot
-            restart                     Restart opot
-            status                      Show the opot status
-            install                     Install the opot
-            unistall                    Unistall the opot
+            stop                        Stop opot.
+            start                       Start opot.
+            restart                     Restart opot.
+            status                      Show the opot status.
+            up                          Up the opot in daemon.
+            down                        Down the opot.
+            install                     Install the opot.
+            unistall                    Unistall the opot.
     """
 
     def __init__(self, base_dir):
@@ -143,14 +154,16 @@ class Interpreter(BaseInterpreter):
         print("Bye..")
         raise EOFError
 
+    def command_banner(self, *args, **kwargs):
+        print(self.banner)
+
     # def command_use(self):
 
     def command_shodan(self, args):
         search_result = Shodan(conf_path=self.conf_path,
                                token=self.shodan_token)
-
-    def command_banner(self, *args, **kwargs):
-        print(self.banner)
+        print("Not yet developed")
+        return
 
     def command_zoomeye(self, args):
         if len(args) > 0:
@@ -160,6 +173,7 @@ class Interpreter(BaseInterpreter):
                 username=self.zoomeye_username,
                 password=self.zoomeye_password).search(args)
             self._insert_into_knowledgeDb("services", search_result)
+            self.command_show("services")
         else:
             print("please search something")
 
@@ -167,8 +181,12 @@ class Interpreter(BaseInterpreter):
         search_result = Fofa(conf_path=self.conf_path,
                              user=self.fofa_email,
                              token=self.fofa_token)
+        print("Not yet developed")
 
     def command_censys(self, args):  # censys不太好用，返回所有端口，选择不是很方便
+        print("Not yet developed")
+        return
+
         if len(args) > 0:
             args = " ".join(args)
             search_result = Censys(conf_path=self.conf_path,
@@ -250,6 +268,10 @@ class Interpreter(BaseInterpreter):
                 except Exception as ex:
                     print(ex)
                     return
+            else:
+                print("Please add operation")
+                print(getattr(self, self.current_module + "_help_message"))
+
         else:
             print("please use a module eg:openresty|opot")
 

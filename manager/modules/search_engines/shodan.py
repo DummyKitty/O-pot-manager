@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File        :shodan.py
+@Description :
+@Date        :2021/04/20 18:56:59
+@Author      :dr34d
+@Version     :1.0
+'''
+
 import urllib
 
 from configparser import ConfigParser
