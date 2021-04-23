@@ -1,7 +1,6 @@
 1 phpmyadmin webdoksandokuz.com 37.247.111.103 80
-23 weblogic stevenc.ca 198.98.112.225 81
-40 weblogic einfo.port.co.th 61.19.205.144 8080
-14 phpmyadmin mail.utzingers.ch 78.46.49.112 8081
-44 solr 3dlacrosse.com 52.51.18.160 8089
-5 phpmyadmin dmt-potsdam.de 217.114.222.211 9000
-37 weblogic bigip-idmrestinternal-rdr.em2.oraclecloud.com 160.34.16.45 10000
+22 weblogic hitit.baskent.edu.tr 193.255.45.116 81
+34 weblogic xsk.tehon.org 45.76.7.94 8080
+45 solr vinayras.com 104.21.47.72 8081
+13 phpmyadmin akademialp.pl 104.21.19.188 8089
+33 weblogic www.sokos.sk 46.229.230.4 9000

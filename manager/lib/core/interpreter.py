@@ -172,7 +172,7 @@ class Interpreter(BaseInterpreter):
                 username=self.zoomeye_username,
                 password=self.zoomeye_password).search(args)
             self._insert_into_knowledgeDb("services", search_result)
-            self.command_show("services")
+            self.command_show(["services"])
         else:
             print("please search something")
 
@@ -212,6 +212,8 @@ class Interpreter(BaseInterpreter):
         table_name = " ".join(table_name)
         if table_name in self.knowledgeDb.white_tables:
             self.knowledgeDb.delete(table_name=table_name, allrange=True)
+        else:
+            print("Table name not exist. Please use 'services'.")
 
     def _show_services(self, args):
         service_type = args[0] if len(args) > 0 else None
