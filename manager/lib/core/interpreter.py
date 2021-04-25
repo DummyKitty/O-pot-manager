@@ -129,7 +129,8 @@ class Interpreter(BaseInterpreter):
             up                          Up the opot in daemon.
             down                        Down the opot.
             install                     Install the opot.
-            unistall                    Unistall the opot.
+            unistall                    Unistall the opot.{red}
+    help{end}                                Exit from current module.                                 
     """
 
     def __init__(self, base_dir):
